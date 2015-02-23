@@ -15,7 +15,7 @@
 				'<div>' + 
 				'The specified team ID was: ' + s.team_id + '<br />' +
 				'The specified sport ID was: ' + s.team_sport + '<br />' +
-				'Finally, the specified season was ' + s.season +
+				'Finally, the specified season was: ' + s.season +
 				'</div>'
 			);
 		}
