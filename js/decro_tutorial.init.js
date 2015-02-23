@@ -10,7 +10,6 @@
 			// now, I'm going to add markup to the #decro-container DOM element
 			// that was also created in the page callback
 			
-			debugger;
 			$('#decro-container').html(
 				'<div>' + 
 				'The specified team ID was: ' + s.team_id + '<br />' +
