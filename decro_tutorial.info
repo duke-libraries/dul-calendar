@@ -1,4 +1,5 @@
 name = decro Tutorials
 description = A collection of helpful tutorials for Drupal developers
 core = 7.x
-
+stylesheets[all][] = decro_tutorial.css
+ 
