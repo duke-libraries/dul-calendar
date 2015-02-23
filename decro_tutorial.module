@@ -42,13 +42,13 @@ function decro_tutorial_behaviors() {
 	$page['#attached']['js'][] = array(
 		// notice how I use the module name as the key mapping for
 		// these settings
-		'data' => array('decro' => $settings),
+		'data' => array('decro_tutorial' => $settings),
 		'type' => 'setting',
 	);
  
 	// next, I will attach the Javascript file that will 'consume' these
 	// settings
-	$page['#attached']['js'][] = drupal_get_path('module', 'decro') . '/js/decro.init.js';
+	$page['#attached']['js'][] = drupal_get_path('module', 'decro_tutorial') . '/js/decro_tutorial.init.js';
 	
 	$page['fluff'] = array(
 		'#markup' => t('This is just some extra fluff that has no bearing on the example.'),
