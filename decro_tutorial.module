@@ -11,6 +11,24 @@ function decro_tutorial_menu() {
 			'access callback' => TRUE,
 			'title' => 'Drupal.behaviors Tutorial',
 		),
+		'bootstrap-calendar-tutorial' => array(
+			'page callback' => 'decro_tutorial_bootstrap_calendar',
+			'access callback' => TRUE,
+			'title' => 'Calendar Page using Bootstrap',
+			'file' => 'decro_tutorial.bootstrap.calendar.inc',
+		),
+	);
+}
+
+/**
+ * Implements hook_theme()
+ */
+function decro_tutorial_theme($existing, $type, $theme, $path) {
+	return array(
+		'decro-tutorial-calendar' => array(
+			'template' => 'decro-tutorial-calendar',
+			'path' => $path . '/theme',
+		),
 	);
 }
 
@@ -56,4 +74,13 @@ function decro_tutorial_behaviors() {
  
 	// return the $page array and let Drupal render it
 	return $page;
+}
+
+function decro_tutorial_calendar_day_elements($dateArray) {
+	$elements[] = array(
+		'#markup' => 'Events go here',
+		'#prefix' => '<div>',
+		'#suffix' => '</div>',
+	);
+	return $elements;
 }
