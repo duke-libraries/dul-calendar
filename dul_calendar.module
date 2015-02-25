@@ -64,7 +64,7 @@ function dul_calendar_calendar() {
 	  foreach (module_implements('dul_calendar_day_elements') as $module) {
 	    // will call all modules implementing hook_hook_name and 
 	    // push the results onto the $result array
-	    $new_elements = module_invoke($module, 'calendar_day_elements', getdate($current_time));
+	    $new_elements = module_invoke($module, 'dul_calendar_day_elements', getdate($current_time));
 	    $elements = array_merge($elements, $new_elements);
 	  }
 		$cell = array(
