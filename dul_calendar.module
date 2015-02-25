@@ -1,5 +1,35 @@
 <?php
+/**
+ * @file
+ *
+ */
 
+function dul_calendar_menu() {
+	return array(
+		// define menu slugs here
+	);
+}
+
+/**
+ * Implements hook_theme()
+ */
+function dul_calendar_theme($existing, $type, $theme, $path) {
+	return array(
+		'dul-calendar-base' => array(
+			'template' => 'dul-calendar-base',
+			'path' => $path . '/theme',
+		),
+	);
+}
+
+function dul_calendar_calendar_day_elements($dateArray) {
+	$elements[] = array(
+		'#markup' => 'Events go here',
+		'#prefix' => '<div>',
+		'#suffix' => '</div>',
+	);
+	return $elements;
+}
 /**
  * Page callback for Boostrap-y Calendar Example
  */
