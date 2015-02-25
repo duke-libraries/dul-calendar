@@ -3,7 +3,7 @@
 /**
  * Page callback for Boostrap-y Calendar Example
  */
-function decro_tutorial_bootstrap_calendar() {
+function dul_calendar_calendar() {
 	$build = array();
 	$t = time();
 	$o = _decro_prepared_calendar_info($t);
@@ -60,7 +60,7 @@ function decro_tutorial_bootstrap_calendar() {
 	return $build;
 }
 
-function _decro_prepared_calendar_info($ts = NULL) {
+function _dul_prepared_calendar_info($ts = NULL) {
 	if ($ts == NULL) {
 		$ts = time();
 	}
