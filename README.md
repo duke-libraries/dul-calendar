@@ -1,6 +1,3 @@
-# decro-tutorial
+# dul-calendar
 
-Drupal module used in various tutorial articles on my personal website.
-
-See:
-http://decro.net/article/using-drupalbehaviors-and-custom-javascript-settings
+This module aims to be the foundation (or pilot idea) for migrating portions of the Library's Java-based Event Registration application.
