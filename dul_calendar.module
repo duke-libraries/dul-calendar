@@ -7,6 +7,11 @@
 function dul_calendar_menu() {
 	return array(
 		// define menu slugs here
+		'test-calendar' => array(
+			'page callback' => 'dul_calendar_calendar',
+			'access callback' => TRUE,
+			'title' => 'Library Calendar',
+		),
 	);
 }
 
@@ -26,19 +31,21 @@ function dul_calendar_theme($existing, $type, $theme, $path) {
  * Implements hook_dul_calendar_day_elements
  */
 function dul_calendar_dul_calendar_day_elements($dateArray) {
-	$elements[] = array(
-		'#markup' => 'Events go here',
-		'#prefix' => '<div>',
-		'#suffix' => '</div>',
-	);
-	return $elements;
+	return FALSE;
 }
 /**
  * Page callback for Boostrap-y Calendar Example
  */
-function dul_calendar_calendar() {
+function dul_calendar_calendar($year = FALSE, $month = FALSE) {
 	$build = array();
-	$t = time();
+
+	date_default_timezone_set('America/New_York');
+	$t = NULL;
+	if ($year && $month) {
+		$t = mktime(0, 0, 0, $month, 1, $year);
+	} else {
+		$t = time();
+	}
 	$o = _dul_prepared_calendar_info($t);
 	$interval = new DateInterval('P1D');
 
@@ -65,16 +72,19 @@ function dul_calendar_calendar() {
 	    // will call all modules implementing hook_hook_name and 
 	    // push the results onto the $result array
 	    $new_elements = module_invoke($module, 'dul_calendar_day_elements', getdate($current_time));
-	    $elements = array_merge($elements, $new_elements);
+			if ($new_elements !== FALSE) {
+		    $elements = array_merge($elements, $new_elements);
+			}
 	  }
 		$cell = array(
 			'data' => $elements,
+			'width' => '14.2857%',
 		);
 		if (date('z', $t) == date('z', $current_time)) {
 			$cell['class'] = array('active');
 		}
 		$current_row[] = $cell;
-
+		
 		$o->dateTime->add($interval);
 		$i++;
 	}
@@ -83,6 +93,37 @@ function dul_calendar_calendar() {
 		$table_rows[] = $current_row;
 	}
 
+	$build['calendar-navbar'] = array(
+		'#type' => 'container',
+		'#attributes' => array('class' => array('row'), 'id' => 'my-special-pet', 'style' => 'margin-bottom: 1em;'),
+		'buttons' => array(
+			'#type' => 'container',
+			'#attributes' => array(
+				'class' => array('btn-group', 'span1', ),
+			),
+			'prevmonth' => array(
+				'#markup' => l(
+					t('<i class="icon-chevron-left"></i>'), 'test-calendar/' . $o->aPrevMonth['year'] . '/' . $o->aPrevMonth['mon'], 
+					array('html' => TRUE, 'attributes' => array('class' => array('btn')))
+				),
+			),
+			'nextmonth' => array(
+				'#markup' => l(
+					t('<i class="icon-chevron-right"></i>'), 'test-calendar/' . $o->aNextMonth['year'] . '/' . $o->aNextMonth['mon'], 
+					array('html' => TRUE, 'attributes' => array('class' => array('btn')))
+				),
+			),
+		),
+		'month-label' => array(
+			'#type' => 'container',
+			'#attributes' => array(
+				'class' => array('span3'),
+			),
+			'month-text' => array(
+				'#markup' => '<h3>' . date('F Y', $t) . '</h3>',
+			),
+		),
+	);
 	$build['calendar-table'] = array(
 		'#theme' => 'table',
 		'#rows' => $table_rows,
@@ -98,6 +139,8 @@ function _dul_prepared_calendar_info($ts = NULL) {
 		$ts = time();
 	}
 
+	$system_first_weekday_offset = (int)shell_exec('locale first_weekday');
+
 	$iMonth = date('n', $ts);
 	$iYear = date('Y', $ts);
 	$iDaysInMonth = date('t', $ts);
@@ -105,17 +148,36 @@ function _dul_prepared_calendar_info($ts = NULL) {
 	$first_day_month = mktime(0, 0, 0, $iMonth, 1, $iYear);
 	$last_day_month = mktime(0, 0, 0, $iMonth, $iDaysInMonth, $iYear);
 
-	$first_sunday = $first_day_month - (86400 * ((int)date('w', $first_day_month)));
-	$last_saturday = $last_day_month + (86400 * (6 - (int)date('w', $last_day_month)));
+	$dt_first_day = new DateTime();
+	$dt_first_day->setTimestamp($first_day_month);
+	$dt_last_day = new DateTime();
+	$dt_last_day->setTimestamp($last_day_month);
 
-	$datetime = new DateTime(date('r', $first_sunday));
+	$sunday_delta = (int)date('w', $dt_first_day->getTimestamp()) * $system_first_weekday_offset;
+	$saturday_delta = 6 - ((int)date('w', $dt_last_day->getTimestamp()) * $system_first_weekday_offset);
+
+	$dt_first_sunday = $dt_first_day;
+	$dt_first_sunday->sub(new DateInterval('P'.$sunday_delta.'D'));
+	$dt_last_saturday = $dt_last_day;
+	$dt_last_saturday->add(new DateInterval('P'.$saturday_delta.'D'));
+		
+	$datetime = $dt_first_sunday;
+
+	$prevMonth = new DateTime();
+	$prevMonth->setTimeStamp($datetime->getTimestamp());
+	$prevMonth->sub(new DateInterval('P1M'));
+	
+	$nextMonth = new DateTime();
+	$nextMonth->setTimestamp($dt_last_saturday->getTimestamp());
+	$nextMonth->add(new DateInterval('P1D'));
 
 	$o = new stdClass();
 	$o->dateTime = $datetime;
 	$o->days_in_month = $iDaysInMonth;
 	$o->month = $iMonth;
-	$o->first_cal_day = $first_sunday;
-	$o->last_cal_day = $last_saturday;
-
+	$o->first_cal_day = $dt_first_sunday->getTimestamp();
+	$o->last_cal_day = $dt_last_saturday->getTimestamp();
+	$o->aNextMonth = getdate($nextMonth->getTimestamp());
+	$o->aPrevMonth = getdate($prevMonth->getTimestamp());
 	return $o;
 }
