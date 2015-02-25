@@ -1,0 +1,5 @@
+name = Duke University Libraries Events
+description = Events sponsored by and/or hosted at Duke University Libraries
+core = 7.x
+dependencies[] = dul_calendar
+

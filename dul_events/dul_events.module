@@ -1,0 +1,67 @@
+<?php
+/**
+ * @file
+ */
+
+/**
+ * Implements hook_menu
+ * @see hook_menu
+ */
+function dul_events_menu() {
+	return array(
+		// register menu stubs here
+	);
+}
+
+function dul_events_dul_calendar_day_elements($date_array) {
+	// concept -- query the event occurrences table for
+	// event occurrences on this date
+	$elements = array();
+	_dul_events_prepare_db_connection();
+	db_set_active('Event');
+	try {
+	$result = db_query(
+		'SELECT o.dbid as occurrenceId, o.whenStart, o.whenEnd, o.eventId, e.eventName, ow.urlStub   
+		 FROM {occurrence} o 
+		 LEFT JOIN {event} e ON e.dbid = o.eventId
+		 LEFT JOIN {owner} ow ON ow.dbid = e.ownerId 
+		 WHERE o.occurrenceStatus = :oStatus
+		   AND DAYOFYEAR(whenStart) = :oDayOfYear
+			 AND YEAR(whenStart) = :oYear
+			 AND e.publicationStatus = :ePubStatus
+		 ORDER BY whenStart ASC',
+		array(
+			':oStatus' => 'ACTIVE',
+			':oDayOfYear' => $date_array['yday'] + 1,
+			':oYear' => $date_array['year'],
+			':ePubStatus' => 'PUBLISHED',
+		)
+	);
+	} catch (Exception $e) {
+		error_log($e->getMessage());
+	}
+	// http://library.duke.edu/events/data/event.do?id=6515&occur=15079
+	foreach ($result as $record) {
+		$url = $record->urlStub . 'event.do?id=' . $record->eventId . '&occur=' . $record->occurrenceId;
+		$elements[] = array(
+			'#type' => 'container',
+			'#attributes' => array('style' => 'margin-bottom: 1em'),
+			'event-' . $record->occurrenceId => array(
+				'#markup' => '<small><a href="' . $url . '">' . t($record->eventName) . '</a></small>',
+			),
+		);
+	}
+	db_set_active();
+	return $elements;
+}
+
+function _dul_events_prepare_db_connection() {
+	$event_db_info = array(
+		'host' => '127.0.0.1',
+		'database' => 'Event',
+		'username' => 'event_client',
+		'password' => 'event_client',
+		'driver' => 'mysql',
+	);
+	Database::addConnectionInfo('Event', 'default', $event_db_info);
+}
