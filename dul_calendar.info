@@ -1,5 +1,5 @@
 name = Duke University Libraries Calendar
 description = A starting point for porting portions of Jim Coble's Events Registration
-core = 7.3x
+core = 7.x
 stylesheets[all][] = dul_calendar.css
  
