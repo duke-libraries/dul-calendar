@@ -22,7 +22,10 @@ function dul_calendar_theme($existing, $type, $theme, $path) {
 	);
 }
 
-function dul_calendar_calendar_day_elements($dateArray) {
+/**
+ * Implements hook_dul_calendar_day_elements
+ */
+function dul_calendar_dul_calendar_day_elements($dateArray) {
 	$elements[] = array(
 		'#markup' => 'Events go here',
 		'#prefix' => '<div>',
@@ -36,7 +39,7 @@ function dul_calendar_calendar_day_elements($dateArray) {
 function dul_calendar_calendar() {
 	$build = array();
 	$t = time();
-	$o = _decro_prepared_calendar_info($t);
+	$o = _dul_prepared_calendar_info($t);
 	$interval = new DateInterval('P1D');
 
 	$i = 0;
@@ -58,7 +61,7 @@ function dul_calendar_calendar() {
 			'#prefix' => '<div class="text-left">',
 			'#suffix' => '</div>',
 		);
-	  foreach (module_implements('calendar_day_elements') as $module) {
+	  foreach (module_implements('dul_calendar_day_elements') as $module) {
 	    // will call all modules implementing hook_hook_name and 
 	    // push the results onto the $result array
 	    $new_elements = module_invoke($module, 'calendar_day_elements', getdate($current_time));
