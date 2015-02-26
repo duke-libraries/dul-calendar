@@ -12,6 +12,18 @@ function dul_calendar_menu() {
 			'access callback' => TRUE,
 			'title' => 'Library Calendar',
 		),
+		'calendar/events' => array(
+			'page callback' => 'dul_calendar_calendar',
+			'page arguments' => array(1),
+			'access callback' => TRUE,
+			'title' => 'Library Events Calendar',
+		),
+		'calendar/hours' => array(
+			'page callback' => 'dul_calendar_calendar',
+			'page arguments' => array(1),
+			'access callback' => TRUE,
+			'title' => 'Library Hours',
+		),
 	);
 }
 
@@ -30,13 +42,13 @@ function dul_calendar_theme($existing, $type, $theme, $path) {
 /**
  * Implements hook_dul_calendar_day_elements
  */
-function dul_calendar_dul_calendar_day_elements($dateArray) {
+function dul_calendar_dul_calendar_events_elements($dateArray) {
 	return FALSE;
 }
 /**
  * Page callback for Boostrap-y Calendar Example
  */
-function dul_calendar_calendar($year = FALSE, $month = FALSE) {
+function dul_calendar_calendar($cal_category, $year = FALSE, $month = FALSE) {
 	$build = array();
 
 	date_default_timezone_set('America/New_York');
@@ -68,10 +80,12 @@ function dul_calendar_calendar($year = FALSE, $month = FALSE) {
 			'#prefix' => '<div class="text-left">',
 			'#suffix' => '</div>',
 		);
-	  foreach (module_implements('dul_calendar_day_elements') as $module) {
+
+		$hook = 'dul_calendar_' . $cal_category . '_elements';
+	  foreach (module_implements($hook) as $module) {
 	    // will call all modules implementing hook_hook_name and 
 	    // push the results onto the $result array
-	    $new_elements = module_invoke($module, 'dul_calendar_day_elements', getdate($current_time));
+	    $new_elements = module_invoke($module, $hook, getdate($current_time));
 			if ($new_elements !== FALSE) {
 		    $elements = array_merge($elements, $new_elements);
 			}
@@ -81,7 +95,7 @@ function dul_calendar_calendar($year = FALSE, $month = FALSE) {
 			'width' => '14.2857%',
 		);
 		if (date('z', $t) == date('z', $current_time)) {
-			$cell['class'] = array('active');
+			$cell['class'] = array('info');
 		}
 		$current_row[] = $cell;
 		
@@ -103,13 +117,15 @@ function dul_calendar_calendar($year = FALSE, $month = FALSE) {
 			),
 			'prevmonth' => array(
 				'#markup' => l(
-					t('<i class="icon-chevron-left"></i>'), 'test-calendar/' . $o->aPrevMonth['year'] . '/' . $o->aPrevMonth['mon'], 
+					t('<i class="icon-chevron-left"></i>'), 
+					'calendar/' . $cal_category . '/' . $o->aPrevMonth['year'] . '/' . $o->aPrevMonth['mon'], 
 					array('html' => TRUE, 'attributes' => array('class' => array('btn')))
 				),
 			),
 			'nextmonth' => array(
 				'#markup' => l(
-					t('<i class="icon-chevron-right"></i>'), 'test-calendar/' . $o->aNextMonth['year'] . '/' . $o->aNextMonth['mon'], 
+					t('<i class="icon-chevron-right"></i>'), 
+					'calendar/' . $cal_category . '/' . $o->aNextMonth['year'] . '/' . $o->aNextMonth['mon'], 
 					array('html' => TRUE, 'attributes' => array('class' => array('btn')))
 				),
 			),
@@ -128,7 +144,7 @@ function dul_calendar_calendar($year = FALSE, $month = FALSE) {
 		'#theme' => 'table',
 		'#rows' => $table_rows,
 		'#attributes' => array(
-			'class' => array('table', 'table-striped'),
+			'class' => array('table', 'table-bordered'),
 		),
 	);
 	return $build;
