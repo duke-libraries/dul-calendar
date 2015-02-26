@@ -13,7 +13,7 @@ function dul_events_menu() {
 	);
 }
 
-function dul_events_dul_calendar_day_elements($date_array) {
+function dul_events_dul_calendar_events_elements($date_array) {
 	// concept -- query the event occurrences table for
 	// event occurrences on this date
 	$elements = array();
