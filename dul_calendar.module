@@ -24,6 +24,18 @@ function dul_calendar_menu() {
 			'access callback' => TRUE,
 			'title' => 'Library Hours',
 		),
+		'calendar/hours/%' => array(
+			'title callback' => 'dul_calendar_breadcrumb_label',
+			'title arguments' => array('year', 2),
+			'access callback' => TRUE,
+		),
+		'calendar/hours/%/%' => array(
+			'title callback' => 'dul_calendar_breadcrumb_label',
+			'title arguments' => array('month', 3),
+			'access callback' => TRUE,
+			'page callback' => 'dul_calendar_calendar',
+			'page arguments' => array(1, 2, 3),
+		),
 	);
 }
 
@@ -49,6 +61,7 @@ function dul_calendar_dul_calendar_events_elements($dateArray) {
  * Page callback for Boostrap-y Calendar Example
  */
 function dul_calendar_calendar($cal_category, $year = FALSE, $month = FALSE) {
+	#dpm($cal_category . '; ' . $year . '; ' . $month);
 	$build = array();
 
 	date_default_timezone_set('America/New_York');
@@ -74,6 +87,8 @@ function dul_calendar_calendar($cal_category, $year = FALSE, $month = FALSE) {
 			$current_row = array();
 		}
 
+		# create the elements array, and add the first element
+		# that being the numerical day value
 		$elements = array();
 		$elements[] = array(
 			'#markup' => date('j', $current_time),
@@ -81,19 +96,25 @@ function dul_calendar_calendar($cal_category, $year = FALSE, $month = FALSE) {
 			'#suffix' => '</div>',
 		);
 
+		# specify the hook to invoke, then allow participating 
+		# modules (e.g. dul_hours) the opportunity to add 
+		# elements
 		$hook = 'dul_calendar_' . $cal_category . '_elements';
 	  foreach (module_implements($hook) as $module) {
-	    // will call all modules implementing hook_hook_name and 
-	    // push the results onto the $result array
 	    $new_elements = module_invoke($module, $hook, getdate($current_time));
 			if ($new_elements !== FALSE) {
 		    $elements = array_merge($elements, $new_elements);
 			}
 	  }
+		
+		# add the elements to the current row, and make sure
+		# to adjust the width accordingly
 		$cell = array(
 			'data' => $elements,
 			'width' => '14.2857%',
 		);
+		
+		# account for the current day
 		if (date('z', $t) == date('z', $current_time)) {
 			$cell['class'] = array('info');
 		}
@@ -107,26 +128,36 @@ function dul_calendar_calendar($cal_category, $year = FALSE, $month = FALSE) {
 		$table_rows[] = $current_row;
 	}
 
+	// add a navbar that includes a "previous" and "next" button
 	$build['calendar-navbar'] = array(
 		'#type' => 'container',
 		'#attributes' => array('class' => array('row'), 'id' => 'my-special-pet', 'style' => 'margin-bottom: 1em;'),
-		'buttons' => array(
+		'button-toolbar' => array(
 			'#type' => 'container',
 			'#attributes' => array(
-				'class' => array('btn-group', 'span1', ),
+				'class' => array('btn-toolbar', 'span2', ),
 			),
-			'prevmonth' => array(
-				'#markup' => l(
-					t('<i class="icon-chevron-left"></i>'), 
-					'calendar/' . $cal_category . '/' . $o->aPrevMonth['year'] . '/' . $o->aPrevMonth['mon'], 
-					array('html' => TRUE, 'attributes' => array('class' => array('btn')))
+			'goto-today' => array(
+				'#markup' => t('<button class="btn">Today</button>'), 
+			),
+			'buttons' => array(
+				'#type' => 'container',
+				'#attributes' => array(
+					'class' => array('btn-group' ),
 				),
-			),
-			'nextmonth' => array(
-				'#markup' => l(
-					t('<i class="icon-chevron-right"></i>'), 
-					'calendar/' . $cal_category . '/' . $o->aNextMonth['year'] . '/' . $o->aNextMonth['mon'], 
-					array('html' => TRUE, 'attributes' => array('class' => array('btn')))
+				'prevmonth' => array(
+					'#markup' => l(
+						t('<i class="icon-chevron-left"></i>'), 
+						'calendar/' . $cal_category . '/' . $o->aPrevMonth['year'] . '/' . $o->aPrevMonth['mon'], 
+						array('html' => TRUE, 'attributes' => array('class' => array('btn')))
+					),
+				),
+				'nextmonth' => array(
+					'#markup' => l(
+						t('<i class="icon-chevron-right"></i>'), 
+						'calendar/' . $cal_category . '/' . $o->aNextMonth['year'] . '/' . $o->aNextMonth['mon'], 
+						array('html' => TRUE, 'attributes' => array('class' => array('btn')))
+					),
 				),
 			),
 		),
@@ -196,4 +227,15 @@ function _dul_prepared_calendar_info($ts = NULL) {
 	$o->aNextMonth = getdate($nextMonth->getTimestamp());
 	$o->aPrevMonth = getdate($prevMonth->getTimestamp());
 	return $o;
+}
+
+function dul_calendar_breadcrumb_label($what, $slug) {
+	if ($what == 'year') {
+		return $slug;
+	}
+	if ($what == 'month') {
+		$a = array('', 'January', 'Febrary', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
+		return $a[$slug];
+	}
+	return FALSE;
 }
